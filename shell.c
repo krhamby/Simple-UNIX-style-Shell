@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+char* get_current_dir();
 
 
 int shell_change_dir(char *dir_path) {
@@ -21,19 +25,28 @@ int shell_file_exists(char *file_path) {
 // NOTE: I changed the file_path to pass-by-reference
 int shell_find_file(char *file_name, char **file_path, char file_path_size) {
   // traverse the PATH environment variable to find the absolute path of a file/command
-  char *path = getenv("PATH");
-  char *path_copy = strdup(path);
-  char *path_token = strsep(&path_copy, ":");
-  while (path_token != NULL) {
-    char *file_path_copy = strdup(path_token);
-    strcat(file_path_copy, "/");
-    strcat(file_path_copy, file_name);
-    if (shell_file_exists(file_path_copy)) {
-      // strcpy(file_path, file_path_copy);
-      *file_path = file_path_copy;
-      return 0;
+  char* cwd = get_current_dir();
+  char* cwd_copy = strdup(cwd);
+  strcat(cwd_copy, "/");
+  strcat(cwd_copy, file_name);
+  if (shell_file_exists(cwd_copy)) {
+    *file_path = get_current_dir();
+    return 0;
+  } else {
+    char *path = getenv("PATH");
+    char *path_copy = strdup(path);
+    char *path_token = strsep(&path_copy, ":");
+    while (path_token != NULL) {
+      char *file_path_copy = strdup(path_token);
+      strcat(file_path_copy, "/");
+      strcat(file_path_copy, file_name);
+      if (shell_file_exists(file_path_copy)) {
+        // strcpy(file_path, file_path_copy);
+        *file_path = file_path_copy;
+        return 0;
+      }
+      path_token = strsep(&path_copy, ":");
     }
-    path_token = strsep(&path_copy, ":");
   }
   return -1;
 }
@@ -71,8 +84,8 @@ char* remove_whitespace(char *str) {
 }
 
 char* get_current_dir() {
-  char *cwd = (char*) malloc(257);
-  getcwd(cwd, 257);
+  char *cwd = (char*) malloc(1000);
+  getcwd(cwd, 1000);
   return cwd;
 }
 
@@ -103,10 +116,10 @@ int main (int argc, char *argv[]) {
 
   int exit = 0;
   char *command;
-  printf("username@hostname:~%s$ ", get_current_dir());
+  printf("kevin@UnixShell:~%s$ ", get_current_dir());
   while (!exit) {
-    command = malloc(257);
-    fgets(command, 100, stdin);
+    command = malloc(1000);
+    fgets(command, 1000, stdin);
     char *first_arg = strsep(&command, " ");
     first_arg = remove_whitespace(first_arg);
     if (strcmp(first_arg, "exit") == 0) {
@@ -120,7 +133,7 @@ int main (int argc, char *argv[]) {
       }
       shell_change_dir(dir_path);
     } else {
-      char *file_path = (char*) malloc(100);
+      char *file_path = (char*) malloc(1000);
       file_path = strsep(&command, " ");
 
       // error handling for file_path
@@ -137,7 +150,7 @@ int main (int argc, char *argv[]) {
       }
     }
     if (!exit) {
-      printf("username@hostname:~%s$ ", get_current_dir());
+      printf("kevin@UnixShell:~%s$ ", get_current_dir());
       free(command);
     } else {
       free(command);
