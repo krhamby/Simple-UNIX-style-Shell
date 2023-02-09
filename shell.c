@@ -1,3 +1,14 @@
+/*
+  Author:  He (David) Zhang
+  Course:  COMP 340, Operating Systems
+  Date:    10 September 2021
+  Description:   This file implements the
+                 Shell program
+  Compile with:  gcc -o shell shell.c
+  Run with:      ./shell
+
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
