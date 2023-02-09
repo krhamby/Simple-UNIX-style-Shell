@@ -20,7 +20,6 @@
 
 char* get_current_dir();
 
-
 int shell_change_dir(char *dir_path) {
   // use the chdir() system call to change the current directory
   return chdir(dir_path);
@@ -34,26 +33,26 @@ int shell_file_exists(char *file_path) {
 }
 
 // NOTE: I changed the file_path to pass-by-reference
-int shell_find_file(char *file_name, char **file_path, char file_path_size) {
+int shell_find_file(char *file_name, char *file_path, char file_path_size) {
   // traverse the PATH environment variable to find the absolute path of a file/command
   char* cwd = get_current_dir();
   char* cwd_copy = strdup(cwd);
   strcat(cwd_copy, "/");
   strcat(cwd_copy, file_name);
   if (shell_file_exists(cwd_copy)) {
-    *file_path = get_current_dir();
+    strcpy(file_path, cwd_copy);
     return 0;
   } else {
     char *path = getenv("PATH");
     char *path_copy = strdup(path);
     char *path_token = strsep(&path_copy, ":");
+    char tmp[1024] = {0}; 
     while (path_token != NULL) {
       char *file_path_copy = strdup(path_token);
       strcat(file_path_copy, "/");
       strcat(file_path_copy, file_name);
       if (shell_file_exists(file_path_copy)) {
-        // strcpy(file_path, file_path_copy);
-        *file_path = file_path_copy;
+        strcpy(file_path, file_path_copy);
         return 0;
       }
       path_token = strsep(&path_copy, ":");
@@ -144,17 +143,24 @@ int main (int argc, char *argv[]) {
       }
       shell_change_dir(dir_path);
     } else {
+      // to be written to in shell_find_file
       char *file_path = (char*) malloc(1000);
-      file_path = strsep(&command, " ");
 
-      // error handling for file_path
-      if (file_path != NULL) {
-        file_path = remove_whitespace(file_path);
-      } else {
-        file_path = "";
+      char *tmp = strsep(&command, " ");
+      int i = 1;
+      char *args[] = {first_arg};
+      while (tmp != NULL) {
+        args[i] = tmp;
+        tmp = strsep(&command, " ");
       }
 
-      if (shell_find_file(first_arg, &file_path, 100) == 0) {
+      // // error handling for file_path -> 
+      // if (file_path != NULL) {
+      //   file_path = remove_whitespace(file_path);
+      // } else {
+      //   file_path = "";
+      // }
+      if (shell_find_file(first_arg, file_path, 100) == 0) {
         shell_execute(file_path, &command);
       } else {
         printf("Error: command not found\n");
