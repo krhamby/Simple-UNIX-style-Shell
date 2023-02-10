@@ -1,5 +1,5 @@
 /*
-  Author:  Kevin Hamby
+  Author:  Kevin Hamby and Melva Loock
   Course:  COMP 340, Operating Systems
   Date:    13 February 2023
   Description:   This file implements the
@@ -195,5 +195,5 @@ int main (int argc, char *argv[]) {
 			report an error message
     }
    */
-}
+  }
 }
